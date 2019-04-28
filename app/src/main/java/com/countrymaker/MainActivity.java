@@ -1,5 +1,6 @@
 package com.countrymaker;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -9,10 +10,15 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.countrymaker.util.Adapter;
+import com.countrymaker.util.HttpRetro;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
 
@@ -34,7 +40,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         listView =  findViewById(R.id.listView);
         ubsList = new ArrayList<Country>();
         adapter = new Adapter(this, ubsList);
-        getData();
+        getDataRetro();
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -50,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         ubsList.clear();
         for (int i=0; i<20; i++){
             int nextInt = new Random().nextInt(4);
-            Country ubs = new Country("", nomes[nextInt], "",  bairros[nextInt], "", "");
+            Country ubs = new Country("", nomes[nextInt], "",  bairros[nextInt], "", "","");
             ubsList.add(ubs);
         }
         adapter.notifyDataSetChanged();
@@ -58,6 +64,47 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
     @Override
     public void onRefresh() {
-        getData();
+        getDataRetro();
     }
+
+    private void getDataRetro(){
+        HttpRetro.getCountryClient().getCountry().enqueue(new Callback<List<Country>>() {
+            public void onResponse(Call<List<Country>> call, Response<List<Country>> response) {
+                if (response.isSuccessful()) {
+                    List<Country> cBody = response.body();
+                    ubsList.clear();
+                    for (Country ubs :  cBody) {
+                        ubsList.add(ubs);
+                    }
+                    adapter.notifyDataSetChanged();
+                } else {
+                    System.out.println(response.errorBody());
+                }
+                swiperefresh.setRefreshing(false);
+            }
+
+            @Override
+            public void onFailure(Call<List<Country>> call, Throwable t) {
+                t.printStackTrace();
+            }
+        });
+    }
+    public class CountryTask extends AsyncTask<String, Void, List<String>> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            swiperefresh.setRefreshing(true);
+        }
+        @Override
+        protected List<String> doInBackground(String... strings) {
+            // ex.: Buscar na internet
+            return null;
+        }
+        @Override
+        protected void onPostExecute(List<String> strings) {
+            super.onPostExecute(strings);
+            // ex.: Processamento dos dados vindos do Servidor
+        }
+    }
+
 }
