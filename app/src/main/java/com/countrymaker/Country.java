@@ -3,8 +3,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
 public class Country implements  Serializable {
-    @SerializedName("id")
-    private String id;
+
     @SerializedName("name")
     private String nome;
     @SerializedName("capital")
@@ -18,8 +17,8 @@ public class Country implements  Serializable {
     @SerializedName("latlng")
     private String latLong;
 
-    public Country(String id, String nome, String capital, String regiao, String subregiao, String codarea, String latLong) {
-        this.id = id;
+    public Country( String nome, String capital, String regiao, String subregiao, String codarea, String latLong) {
+
         this.nome = nome;
         this.capital = capital;
         this.regiao = regiao;
@@ -31,7 +30,6 @@ public class Country implements  Serializable {
     @Override
     public String toString() {
         return "Country{" +
-                "id='" + id + '\'' +
                 ", nome='" + nome + '\'' +
                 ", capital='" + capital + '\'' +
                 ", regiao='" + regiao + '\'' +
@@ -40,13 +38,7 @@ public class Country implements  Serializable {
                 '}';
     }
 
-    public String getId() {
-        return id;
-    }
 
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getNome() {
         return nome;
