@@ -1,5 +1,8 @@
 package com.countrymaker;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -9,6 +12,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.countrymaker.dao.Repositorio;
 import com.countrymaker.util.Adapter;
 import com.countrymaker.util.HttpRetro;
 
@@ -26,6 +30,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     private List<Country> ubsList;
     private ListView listView;
     private SwipeRefreshLayout swiperefresh;
+    Repositorio db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         listView =  findViewById(R.id.listView);
         ubsList = new ArrayList<>();
         adapter = new Adapter(this, ubsList);
+        db = new Repositorio(getBaseContext());
         getDataRetro();
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -66,26 +72,60 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     public void onRefresh() {
         getDataRetro();
     }
+    public Boolean isConnected(){
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
-    private void getDataRetro(){
-        HttpRetro.getCountryClient().getCountry().enqueue(new Callback<List<Country>>() {
-            public void onResponse(Call<List<Country>> call, Response<List<Country>> response) {
-                if (response.isSuccessful()) {
-                    List<Country> cBody = response.body();
-                    ubsList.clear();
-                    ubsList.addAll(cBody);
-                    adapter.notifyDataSetChanged();
-                } else {
-                    System.out.println(response.errorBody());
+        if ( cm != null ) {
+            NetworkInfo ni = cm.getActiveNetworkInfo();
+            return ni != null && ni.isConnected();
+        }
+        return false;
+    }
+
+    public void getDataRetro() {
+
+        swiperefresh.setRefreshing(true);
+
+        // se tiver conexao faz get, senao pega do sqlite
+        if (isConnected()) {
+            HttpRetro.getCountryClient().getCountry().enqueue(new Callback<List<Country>>() {
+                public void onResponse(Call<List<Country>> call, Response<List<Country>> response) {
+                    if (response.isSuccessful()) {
+                        List<Country> ubsBody = response.body();
+                        ubsList.clear();
+
+                        db.excluirAll();
+
+                        for (Country ubs : ubsBody) {
+                            ubsList.add(ubs);
+                            db.inserir(ubs);
+                        }
+                        adapter.notifyDataSetChanged();
+                    } else {
+                        System.out.println(response.errorBody());
+                    }
+                    swiperefresh.setRefreshing(false);
                 }
-                swiperefresh.setRefreshing(false);
-            }
 
-            @Override
-            public void onFailure(Call<List<Country>> call, Throwable t) {
-                t.printStackTrace();
-            }
-        });
+                @Override
+                public void onFailure(Call<List<Country>> call, Throwable t) {
+                    t.printStackTrace();
+                }
+
+            });
+
+        }else {
+            swiperefresh.setRefreshing(false);
+            Toast.makeText(this,"Sem Conexão, listando Ubs do banco...",Toast.LENGTH_SHORT).show();
+            getDataSqlite();
+        }
+
+    }
+
+    private void getDataSqlite() {
+        ubsList.clear();
+        ubsList.addAll(db.listarUbs());
+        adapter.notifyDataSetChanged();
     }
     public class CountryTask extends AsyncTask<String, Void, List<String>> {
         @Override
