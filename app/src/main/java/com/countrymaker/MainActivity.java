@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         ubsList.clear();
         for (int i=0; i<20; i++){
             int nextInt = new Random().nextInt(4);
-            Country ubs = new Country("", nomes[nextInt], "",  bairros[nextInt], "", "");
+            Country ubs = new Country("", nomes[nextInt], "",  bairros[nextInt]);
             ubsList.add(ubs);
         }
         adapter.notifyDataSetChanged();

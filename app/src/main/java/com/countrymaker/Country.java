@@ -12,19 +12,14 @@ public class Country implements  Serializable {
     private String regiao;
     @SerializedName("subregion")
     private String subregiao;
-    @SerializedName("callingCodes")
-    private String codarea;
-    @SerializedName("latlng")
-    private String latLong;
 
-    public Country( String nome, String capital, String regiao, String subregiao, String codarea, String latLong) {
 
+
+    public Country( String nome, String capital, String regiao, String subregiao) {
         this.nome = nome;
         this.capital = capital;
         this.regiao = regiao;
         this.subregiao = subregiao;
-        this.codarea = codarea;
-        this.latLong = latLong;
     }
 
     @Override
@@ -34,7 +29,6 @@ public class Country implements  Serializable {
                 ", capital='" + capital + '\'' +
                 ", regiao='" + regiao + '\'' +
                 ", subregiao='" + subregiao + '\'' +
-                ", codarea='" + codarea + '\'' +
                 '}';
     }
 
@@ -72,19 +66,7 @@ public class Country implements  Serializable {
         this.subregiao = subregiao;
     }
 
-    public String getCodarea() {
-        return codarea;
-    }
 
-    public void setCodarea(String codarea) {
-        this.codarea = codarea;
-    }
 
-    public String getLatLong() {
-        return latLong;
-    }
 
-    public void setLatLong(String latLong) {
-        this.latLong = latLong;
-    }
 }

@@ -23,7 +23,8 @@ public class HttpRetro {
     // Interface com métodos de requisicao
     public interface CountryInterface {
         @GET("rest/v1/all")
-        Call<List<Country>> getCountry();
+         Call<List<Country>> getCountry();
+
     }
 }
 
